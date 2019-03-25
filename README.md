@@ -9,4 +9,15 @@
 * Can delete a done task
 * Persistant storage using [realm.io](https://realm.io/) (Optional)
 
+## Dependencies
+* React Native
+* NodeJS
+* Xcode
+
+## Install
+* Clone the repository
+* Install dependencies: ```npm install```
+* Link modules with React Native ```react-native link```
+* Run in Emulator ```react-native run-ios```
+
 PS: I'm realy sorry for the UI...
