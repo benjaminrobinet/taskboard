@@ -26,7 +26,7 @@ export default class Home extends Component<Props> {
             schema: [TaskModel]
         }).then(realm => {
             this.setState({ realm });
-            this.setState({ tasks: realm.objects('Task') });
+            this.setState({ tasks: realm.objects('Task').sorted('created_at', true) });
         });
     }
 
@@ -37,6 +37,23 @@ export default class Home extends Component<Props> {
     setDetailModalVisible(state) {
         this.setState({detailModalVisible: state});
     };
+
+    setTaskDone(state){
+        this.state.realm.write(() => {
+            this.state.currentTask.done = state;
+            this.setState({currentTask: this.state.currentTask})
+            // this.state.realm.create('Task', {id:task.id, done: state}, true)
+        });
+    }
+
+    deleteTask(){
+        this.state.realm.write(() => {
+            this.state.realm.delete(this.state.currentTask);
+            this.setDetailModalVisible(false);
+
+            this.setState({currentTask: null})
+        });
+    }
 
     _keyExtractor = (item, index) => item.id;
 
@@ -62,14 +79,18 @@ export default class Home extends Component<Props> {
     }
 
     itemPress(task) {
-        this.setState({detailModalVisible: true});
         this.setState({currentTask: task});
+        this.setState({detailModalVisible: true});
     }
 
     render() {
+        let detailModal = null;
+        if(this.state.currentTask){
+            detailModal =<Detail visible={this.state.detailModalVisible} task={this.state.currentTask} closeHandler={this.setDetailModalVisible.bind(this)} setTaskDone={this.setTaskDone.bind(this)} deleteTask={this.deleteTask.bind(this)} />
+        }
         return (
             <View style={styles.container}>
-                <Detail visible={this.state.detailModalVisible} task={this.state.currentTask} closeHandler={this.setDetailModalVisible.bind(this)}/>
+                {detailModal}
                 <Modal
                     animationType="slide"
                     transparent={false}
@@ -116,7 +137,7 @@ export default class Home extends Component<Props> {
                         data={this.state.tasks}
                         style={styles.flatlist}
                         keyExtractor={this._keyExtractor}
-                        renderItem={({item}) => <Text onPress={() => this.itemPress(item)} style={styles.item}>{item.title}</Text>}
+                        renderItem={({item}) => <Text onPress={() => this.itemPress(item)} style={[styles.item, {color: (item.done === true ? '#00ff00' : '#ff0000')}]}>{item.title}</Text>}
                     />
                 </View>
                 <View style={styles.navbar}>

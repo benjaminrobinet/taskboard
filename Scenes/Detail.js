@@ -1,17 +1,22 @@
 import React, {Component} from 'react';
-import {StyleSheet, Text, View, Button, Alert, Modal, SafeAreaView} from 'react-native';
+import {StyleSheet, Text, View, Button, Alert, Modal, SafeAreaView, Switch} from 'react-native';
+import Moment from 'moment';
 
-type Props = {};
-export default class Detail extends Component<Props> {
+export default class Detail extends Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            task: props.task
-        };
+            switchValue: false
+        }
     }
 
     render() {
+        var deleteTask = null;
+
+        if(this.props.task.done){
+            deleteTask = <Button title={'Delete'} onPress={() => this.props.deleteTask()}/>;
+        }
         return (
             <Modal
                 animationType="slide"
@@ -21,8 +26,12 @@ export default class Detail extends Component<Props> {
                     Alert.alert('Modal has been closed.');
                 }}>
                 <SafeAreaView>
-                    <View>
-                        <Text style={{color: '#000000'}}>{this.state.task !== null ? this.state.task.title : ''}</Text>
+                    <View style={{paddingLeft: 30, paddingRight: 30}}>
+                        <Text style={{color: '#000000'}}>Title: {this.props.task.title}</Text>
+                        <Text style={{color: '#000000'}}>Content: {this.props.task.content}</Text>
+                        <Text style={{color: '#000000'}}>Created at: {Moment(this.props.task.created_at, 'YYYYMMDD').fromNow()}</Text>
+                        <Text style={{color: '#000000'}}>Done: <Switch onValueChange={(state) => this.props.setTaskDone(state)} value={this.props.task.done}/></Text>
+                        {deleteTask}
                         <Button title={'Close'} onPress={() => this.props.closeHandler(false)}/>
                     </View>
                 </SafeAreaView>
