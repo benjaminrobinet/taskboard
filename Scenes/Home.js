@@ -12,6 +12,8 @@ export default class Home extends Component<Props> {
         this.state = {
             realm: null,
             createModalVisible: false,
+            title: '',
+            content: ''
         };
     }
 
@@ -19,9 +21,6 @@ export default class Home extends Component<Props> {
         Realm.open({
             schema: [TaskModel]
         }).then(realm => {
-            // realm.write(() => {
-                // realm.create('Dog', {name: 'Rex'});
-            // });
             this.setState({ realm });
         });
     }
@@ -30,8 +29,31 @@ export default class Home extends Component<Props> {
         this.setState({createModalVisible: state});
     };
 
+    _keyExtractor = (item, index) => item.id;
+
+    guid() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+            return v.toString(16);
+        });
+    }
+
+    addTask() {
+        let task = {
+            id: this.guid(),
+            title: this.state.title,
+            content: this.state.content,
+            created_at: new Date(),
+            updated_at: new Date()
+        };
+
+        this.state.realm.write(() => {
+            this.state.realm.create('Task', task);
+        });
+    }
+
     render() {
-        const tasks = this.state.realm.objects('Task');
+        let tasks = this.state.realm ? this.state.realm.objects('Task') : [];
 
         return (
             <View style={styles.container}>
@@ -56,17 +78,18 @@ export default class Home extends Component<Props> {
                                 <TextInput
                                     style={styles.modal__input}
                                     placeholder="Title of your task"
-                                    onChangeText={(text) => this.setState({text})}
+                                    onChangeText={(title) => this.setState({title})}
                                 />
                                 <TextInput
                                     style={styles.modal__input}
                                     placeholder="Content of your task (optional)"
-                                    onChangeText={(text) => this.setState({text})}
+                                    onChangeText={(content) => this.setState({content})}
                                 />
                             </View>
                             <Button
                                 style={styles.modal__submit}
                                 onPress={() => {
+                                    this.addTask();
                                     this.setCreateModalVisible(!this.state.createModalVisible);
                                 }}
                                 title={'Add task'}
@@ -76,17 +99,9 @@ export default class Home extends Component<Props> {
                 </Modal>
                 <View style={styles.content}>
                     <FlatList
-                        data={[
-                            {key: 'Devin'},
-                            {key: 'Jackson'},
-                            {key: 'James'},
-                            {key: 'Joel'},
-                            {key: 'John'},
-                            {key: 'Jillian'},
-                            {key: 'Jimmy'},
-                            {key: 'Julie'},
-                        ]}
-                        renderItem={({item}) => <Text style={styles.item}>{item.key}</Text>}
+                        extraData={this.state.realm.Objects('Task')}
+                        keyExtractor={this._keyExtractor}
+                        renderItem={({task}) => <Text style={styles.item}>{(task !== undefined ? task.content : '')}</Text>}
                     />
                 </View>
                 <View style={styles.navbar}>
