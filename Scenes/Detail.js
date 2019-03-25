@@ -1,18 +1,32 @@
 import React, {Component} from 'react';
-import {StyleSheet, Text, View, Button} from 'react-native';
+import {StyleSheet, Text, View, Button, Alert, Modal, SafeAreaView} from 'react-native';
 
 type Props = {};
 export default class Detail extends Component<Props> {
+    constructor(props) {
+        super(props);
+
+        this.state = {
+            task: props.task
+        };
+    }
+
     render() {
         return (
-            <View style={styles.container}>
-                <View style={styles.content}>
-                    <Text>Nique ta mere</Text>
-                </View>
-                <View style={styles.navbar}>
-                    <Button onPress={console.log('ok')} title={'Add task'}/>
-                </View>
-            </View>
+            <Modal
+                animationType="slide"
+                transparent={false}
+                visible={this.props.visible}
+                onRequestClose={() => {
+                    Alert.alert('Modal has been closed.');
+                }}>
+                <SafeAreaView>
+                    <View>
+                        <Text style={{color: '#000000'}}>{this.state.task !== null ? this.state.task.title : ''}</Text>
+                        <Button title={'Close'} onPress={() => this.props.closeHandler(false)}/>
+                    </View>
+                </SafeAreaView>
+            </Modal>
         )
     }
 }

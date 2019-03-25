@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import {StyleSheet, Text, View, Button, Alert, Modal, SafeAreaView, TextInput, FlatList} from 'react-native';
 import TaskModel from "../Models/Task";
+import Detail from "./Detail";
 
 const Realm = require('realm');
 
@@ -12,8 +13,11 @@ export default class Home extends Component<Props> {
         this.state = {
             realm: null,
             createModalVisible: false,
+            detailModalVisible: false,
             title: '',
-            content: ''
+            content: '',
+            tasks: [],
+            currentTask: null
         };
     }
 
@@ -22,11 +26,16 @@ export default class Home extends Component<Props> {
             schema: [TaskModel]
         }).then(realm => {
             this.setState({ realm });
+            this.setState({ tasks: realm.objects('Task') });
         });
     }
 
     setCreateModalVisible(state) {
         this.setState({createModalVisible: state});
+    }
+
+    setDetailModalVisible(state) {
+        this.setState({detailModalVisible: state});
     };
 
     _keyExtractor = (item, index) => item.id;
@@ -52,11 +61,15 @@ export default class Home extends Component<Props> {
         });
     }
 
-    render() {
-        let tasks = this.state.realm ? this.state.realm.objects('Task') : [];
+    itemPress(task) {
+        this.setState({detailModalVisible: true});
+        this.setState({currentTask: task});
+    }
 
+    render() {
         return (
             <View style={styles.container}>
+                <Detail visible={this.state.detailModalVisible} task={this.state.currentTask} closeHandler={this.setDetailModalVisible.bind(this)}/>
                 <Modal
                     animationType="slide"
                     transparent={false}
@@ -99,9 +112,11 @@ export default class Home extends Component<Props> {
                 </Modal>
                 <View style={styles.content}>
                     <FlatList
-                        extraData={this.state.realm.Objects('Task')}
+                        extraData={this.state}
+                        data={this.state.tasks}
+                        style={styles.flatlist}
                         keyExtractor={this._keyExtractor}
-                        renderItem={({task}) => <Text style={styles.item}>{(task !== undefined ? task.content : '')}</Text>}
+                        renderItem={({item}) => <Text onPress={() => this.itemPress(item)} style={styles.item}>{item.title}</Text>}
                     />
                 </View>
                 <View style={styles.navbar}>
@@ -121,6 +136,8 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     content: {
+        flex: 1,
+        flexDirection: 'column',
     },
     modal: {
         height: '100%',
@@ -141,11 +158,16 @@ const styles = StyleSheet.create({
     modal__submit: {
         marginTop: 20
     },
+    flatlist: {
+        flexGrow: 1
+    },
     navbar: {
         // flex: 1,
         flexDirection: 'row',
         justifyContent: 'space-around',
         backgroundColor: '#ffffff',
+        borderTopWidth: 1,
+        borderTopColor: '#e2e2e2',
         paddingBottom: 40,
         paddingTop: 30
     },
@@ -153,5 +175,6 @@ const styles = StyleSheet.create({
         padding: 10,
         fontSize: 18,
         height: 44,
+        backgroundColor: "#ffffff"
     },
 });
